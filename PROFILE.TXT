@@ -1,0 +1,70 @@
+                    *** OS/2 Profiler ***
+
+  These files are the source code for very simple profiler for OS/2.  Yes,
+I admit, it's a kludge; but it works.
+
+  The profiler itself runs as a process seperate from the program being
+profiled.  It creates a small shared memory segment and runs at a time-critical
+priority.  It keeps looking at a SHORT variable in the memory segment and
+maintains a histogram of the values found in the variable.  When it finds
+an exit code in the variable, or it receives a ^C, it exits and prints out
+a frequency distribution of the values it found in the variable.
+
+  The program being profiled must be slightly modified to include the code
+at function entry and exit to update the variable, and the code to access
+and free the shared memory segment.
+
+  I wrote the profiler to help in speeding up a batch program that ran at
+a glacial rate, and it met the objective perfectly.  The profiler can easily
+be extended to handle multi-thread programs and recursive function calls.
+I release this program to the public domaine.  May it be useful to other
+OS/2 programmers.  Comments and suggestions are welcome.
+
+      Andrew Goodman
+      Compuserve 72010,3113
+
+
+                      *** Instructions ***
+
+--- To prepare:
+
+A.  Compile the profiler
+
+    Study the profiler code (PROFILE.C) and the include file (PROFILE.H).
+    Compile.  I used the large model.
+
+B.  Modify the target file
+
+    1.  Add the statement "#define PROFILE 1" *before* including PROFILE.H
+        in every module.  To turn off the inclusion of profiler code in the
+        target functions, comment out this define.
+
+    2.  Include PROFILE.H in every module.
+
+    3.  Add the variable  "PROMESSAGE   *pPM;"
+
+    4.  Add the functions "fnusIPro" and "fnvXPro" to at least one module
+
+    5.  Modify all the functions.  As the first line of each function after
+        any local variable declarations, add the line "ENTER(x);", where
+        x is a sequential number starting at 1.  Don't add ENTER to main().
+        add the line "LEAVE;" at every exit point except in main().  Needless
+        to say, be careful: if you miss a function entry or exit, you will
+        blow out the profiler stack.
+
+    6.  If needed, modify the target program so that it will run for 3-5
+        minutes.  The profiler does not look very often (by machine speeds)
+        to see what function is running, so you need a large sample set
+        for significant results.
+
+    7.  Compile.  I used the large model.
+
+
+--- To use:
+
+    A.  Run the profiler in an OS/2 command window.  You will probably want
+        to pipe the output to a file.
+
+    B.  Run the target in a seperate session.
+
+    C.  When the target completes, check the profiler output.
